@@ -3,16 +3,28 @@ import itertools
 
 
 class Mancala:
-    def __init__(self):
-        self.board = [[4, 4, 4, 4, 4, 4], [4, 4, 4, 4, 4, 4]]
-        self.max_index = len(self.board[0]) - 1
-        self.pot = [0, 0]
-        self.move_count = 0
-        self.move_count_fine = [0, 0]
-        self.hand = 0
-        self.current_player = 0
-        self.game_over = False
-        self.move_history = []
+    def __init__(self, copy_obj=None):
+        if copy_obj is None:
+            self.board = [[4, 4, 4, 4, 4, 4], [4, 4, 4, 4, 4, 4]]
+            self.max_index = len(self.board[0]) - 1
+            self.pot = [0, 0]
+            self.move_count = 0
+            self.move_count_fine = [0, 0]
+            self.hand = 0
+            self.current_player = 0
+            self.game_over = False
+            self.move_history = []
+            return
+
+        self.board = copy_obj.board
+        self.max_index = copy_obj.max_index
+        self.pot = copy_obj.pot
+        self.move_count = copy_obj.move_count
+        self.move_count_fine = copy_obj.move_count_fine
+        self.hand = copy_obj.hand
+        self.current_player = copy_obj.current_player
+        self.game_over = copy_obj.game_over
+        self.move_history = copy_obj.move_history
 
     def ending_condition_check(self):
         current_player_sum = 0
@@ -298,7 +310,7 @@ def alt_utility_strategy(game: object, give_name=False):
 
 
 # Simulation function; Simulates [depth] number of games with player 1 using Strat1
-def simulate_games(depth: int, strat1=None, strat2=None, show_progress=False, print_result=True):
+def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, print_result=True):
     if strat1 is None or strat2 is None:
         return False
 
@@ -311,6 +323,8 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=False, pr
         strategy = strat1_name + ' vs ' + strat2_name
 
     score_count = [0, 0]
+    longest_game = None
+    shortest_game = None
     win_count = [0, 0, 0]
     counter = 0
 
@@ -334,15 +348,26 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=False, pr
             win_count[2] += 1
 
         # Start new game
+        if longest_game is None:
+            longest_game = Mancala(game)
+        elif len(game.move_history) > len(longest_game.move_history):
+            longest_game = Mancala(game)
+
+        if shortest_game is None:
+            shortest_game = Mancala(game)
+        elif len(game.move_history) < len(longest_game.move_history):
+            shortest_game = Mancala(game)
+
         game.__init__()
         counter += 1
 
-        if show_progress and counter % int(depth / 10) == 0:
-            print(str(counter) + ' / ' + str(depth))
+        if show_progress:
+            print('\r' + str(counter) + ' of ' + str(depth), end='')
 
         if counter != depth:
             continue
 
+        print('', end='')
         score_norm = [score_count[0], score_count[1]]
 
         if score_norm[0] >= score_norm[1]:
@@ -354,13 +379,34 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=False, pr
             score_norm[1] /= 10000
             score_norm[0] = 1.0
 
+        win_ratio = [win_count[0], win_count[1]]
+
+        if win_ratio[0] >= win_ratio[1]:
+            win_ratio[0] = int((win_ratio[0] / win_ratio[1]) * 10000)
+            win_ratio[0] /= 10000
+            win_ratio[1] = 1.0
+        else:
+            win_ratio[1] = int((win_ratio[1] / win_ratio[0]) * 10000)
+            win_ratio[1] /= 10000
+            win_ratio[0] = 1.0
+
+        win_percentage = [str(int((win_count[0] / depth) * 10000) / 100) + '%',
+                          str(int((win_count[1] / depth) * 10000) / 100) + '%']
+
         if print_result:
+            print('\r%s games played:' % str(depth))
             print(strategy)
-            print('Score:', score_count, 'Normalized:', score_norm)
-            print('Win Count:', win_count)
+            print('Total Scores: %s / %s | Normalized: %s / %s' %
+                  (score_count[0], score_count[1], score_norm[0], score_norm[1]))
+            print('Win count: %s / %s | Normalized: %s / %s' %
+                  (win_count[0], win_count[1], win_ratio[0], win_ratio[1]))
+            print('Tie %s' % win_count[2])
+            print('Win Percentage: %s / %s' % (win_percentage[0], win_percentage[1]))
+            print('Longest game: %s moves' % len(longest_game.move_history))
+            print('Shortest game: %s moves' % len(shortest_game.move_history))
             print('\n')
 
-        return [score_count, score_norm, win_count, strategy]
+        return [score_count, score_norm, win_count, strategy, longest_game, shortest_game]
 
 
 def human_game(game: object, computer_strat=None):
@@ -406,23 +452,25 @@ def human_game(game: object, computer_strat=None):
 
 
 sim_depth = 10000
-strategies = [random_hole_strategy, heaviest_hole_strategy, utility_strategy, alt_utility_strategy]
-sim_all_strategies = False
+strategies = [random_hole_strategy]
+sim_all_strat_combos = True
 human_play = True
 
 if not human_play:
-    if sim_all_strategies:
+    if sim_all_strat_combos:
         all_combinations = []
         for strat in itertools.product(strategies, strategies):
-            all_combinations.append(strat)
+            if strat not in all_combinations:
+                all_combinations.append(strat)
 
         for s in all_combinations:
             simulate_games(sim_depth, strat1=s[0], strat2=s[1])
-    else:
-        simulate_games(sim_depth, strat1=utility_strategy, strat2=random_hole_strategy, show_progress=True)
+    elif len(strategies) != 0:
+        simulate_games(sim_depth, strat1=utility_strategy, strat2=strategies[0])
 
-g = Mancala()
-print('Board Format:')
-print('[[P1 Side], [P2 Side]] [P1 Mancala, P2 Mancala]')
-print(g.board, g.pot)
-human_game(g, utility_strategy)
+else:
+    g = Mancala()
+    print('Board Format:')
+    print('[[P1 Side], [P2 Side]] [P1 Mancala, P2 Mancala]')
+    print(g.board, g.pot)
+    human_game(g, utility_strategy)
