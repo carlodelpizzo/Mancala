@@ -433,7 +433,8 @@ def second_turn_strategy(game: object, give_name=False):
 
 # Simulation function; Simulates [depth] number of games with player 1 using Strat1
 def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, print_result=True):
-    # Keep empty list at end of list
+    # Keep empty list at end of list; 0: current percentage complete, 1: time when last tenth percentage was reached
+    # 2: current time, 3: current estimated completion time based on last tenth percentage increase
     book_of_time = [0.0, 0.0, 0.0, 0.0, []]
     book_length = 100
     avg_sum = 0
