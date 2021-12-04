@@ -435,6 +435,9 @@ def second_turn_strategy(game: object, give_name=False):
 def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, print_result=True):
     # Keep empty list at end of list
     book_of_time = [0.0, 0.0, 0.0, 0.0, []]
+    book_length = 100
+    avg_sum = 0
+    avg_est_time = 0
 
     if strat1 is None or strat2 is None:
         return False
@@ -488,22 +491,23 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
                 book_of_time[3] = ((book_of_time[2] - book_of_time[1]) * ((100 - book_of_time[0]) * 100)) / 60
                 book_of_time[3] = int(book_of_time[3] * 100) / 100
                 book_of_time[1] = time.time()
-                if len(book_of_time[-1]) < 100:
+
+                if len(book_of_time[-1]) < book_length:
                     book_of_time[-1].append(book_of_time[3])
+                    avg_sum = 0
+                    for i in range(0, len(book_of_time[-1])):
+                        avg_sum += book_of_time[-1][i]
+                    avg_est_time = int(avg_sum / len(book_of_time[-1]) * 100) / 100
                 else:
+                    avg_sum -= book_of_time[-1][0]
+                    avg_sum += book_of_time[3]
                     book_of_time[-1].pop(0)
                     book_of_time[-1].append(book_of_time[3])
+                    avg_est_time = int(avg_sum / len(book_of_time[-1]) * 100) / 100
 
             print('\r' + str(counter) + ' of ' + str(depth) + ' :: ' + str(book_of_time[0]) + '%',
                   end='')
 
-            if len(book_of_time[-1]) > 1:
-                sum_ = 0
-                for i in range(0, len(book_of_time[-1])):
-                    sum_ += book_of_time[-1][i]
-                avg_est_time = int(sum_ / len(book_of_time[-1]) * 100) / 100
-            else:
-                avg_est_time = book_of_time[3]
             print(' :: %s :: Estimated time remaining: %s minutes' % (strategy, avg_est_time), end='')
 
         if counter != depth:
@@ -597,7 +601,7 @@ def human_game(game: object, computer_strat=None):
         human_game(game)
 
 
-sim_depth = 1000
+sim_depth = 1000000
 strategies = [random_hole_strategy,
               offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
               last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
