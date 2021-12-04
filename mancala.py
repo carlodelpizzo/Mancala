@@ -498,7 +498,7 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
 
             print('\r' + str(counter) + ' of ' + str(depth) + ' :: ' + str(global_list[0]) + '%',
                   end='')
-            print(' :: %s :: Estimated time remaining: %s minuets' % (strategy, global_list[3]), end='')
+            print(' :: %s :: Estimated time remaining: %s minutes' % (strategy, global_list[3]), end='')
 
         if counter != depth:
             continue
