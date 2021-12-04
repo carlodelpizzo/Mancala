@@ -104,7 +104,7 @@ class Mancala:
 
 # Returns list of holes which have the highest value for current player using passed value function
 # [hole index, move value]
-def find_highest_utility(game: object, func):
+def find_highest_value(game: object, func):
     if game is None:
         game = Mancala()
 
@@ -248,7 +248,7 @@ def offensive_strategy(game: object, give_name=False):
     if game is None:
         game = Mancala()
 
-    best_moves = find_highest_utility(game, offensive_value_function)
+    best_moves = find_highest_value(game, offensive_value_function)
 
     if best_moves[0][1] == 0:
         random_hole_strategy(game)
@@ -305,7 +305,7 @@ def second_turn_strategy(game: object, give_name=False):
     if game is None:
         game = Mancala()
 
-    best_moves = find_highest_utility(game, second_turn_value_function)
+    best_moves = find_highest_value(game, second_turn_value_function)
 
     if best_moves[0][1] == 0:
         random_hole_strategy(game)
