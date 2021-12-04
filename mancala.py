@@ -594,7 +594,7 @@ if not human_play:
         # Remove deterministic games
         deterministic = [first_hole_strategy, last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
         d = []
-        pop_list = [0]
+        pop_list = []
         for strat in itertools.product(deterministic, deterministic):
             d.append(strat)
 
