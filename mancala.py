@@ -342,10 +342,10 @@ def defensive_strategy(game: object, give_name=False):
 
         # If move ends on opposing players side
         if final_index >= 7:
-            new_index = final_index - (game_.max_index + 1)
+            new_index = final_index - (game_.max_index + 2)
             for i in reversed(range(0, new_index)):
                 # If move blocks opposing player from potential capture
-                if game_.board[opp_player][(new_index - i)] == 0:
+                if game_.board[opp_player][new_index] == 0:
                     utility += game_.board[game_.current_player][game_.max_index - (new_index - i)]
 
         # If opposing player has any empty holes
@@ -566,9 +566,10 @@ def human_game(game: object, computer_strat=None):
         human_game(game)
 
 
-sim_depth = 10000
-strategies = [random_hole_strategy]
-sim_all_strat_combos = True
+sim_depth = 1000
+strategies = [random_hole_strategy, offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
+              last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
+sim_all_strat_combos = False
 human_play = True
 
 if not human_play:
@@ -581,7 +582,7 @@ if not human_play:
         for s in all_combinations:
             simulate_games(sim_depth, strat1=s[0], strat2=s[1])
     elif len(strategies) != 0:
-        simulate_games(sim_depth, strat1=offensive_strategy, strat2=strategies[0])
+        simulate_games(sim_depth, strat1=strategies[0], strat2=strategies[1])
 
 else:
     g = Mancala()
