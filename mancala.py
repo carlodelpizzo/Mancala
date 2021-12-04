@@ -579,10 +579,16 @@ def human_game(game: object, computer_strat=None):
 
 
 sim_depth = 1000
-strategies = [random_hole_strategy, offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
+strategies = [random_hole_strategy,
+              random_hole_strategy, offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
               last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
+
+# If false: will simulate the first two strategies in above list
 sim_all_strat_combos = True
+
+# If true: will override simulation and present human vs computer game with computer using strategy below
 human_play = True
+opponent_strat = offensive_strategy
 
 if not human_play:
     if sim_all_strat_combos:
@@ -614,10 +620,10 @@ if not human_play:
         # Run small sample of determinist games
         for s in d:
             simulate_games(10, strat1=s[0], strat2=s[1])
-    elif len(strategies) != 0:
+    elif len(strategies) > 1:
         simulate_games(sim_depth, strat1=strategies[0], strat2=strategies[1])
 
 else:
     g = Mancala()
     g.print_board()
-    human_game(g, offensive_strategy)
+    human_game(g, computer_strat=opponent_strat)
