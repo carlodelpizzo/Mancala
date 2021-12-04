@@ -31,7 +31,10 @@ class Mancala:
         if self.board[self.current_player][hole_choice] == 0:
             return False
 
-        self.move_history.append([self.current_player, hole_choice])
+        if self.current_player == 0:
+            self.move_history.append(['P1', hole_choice + 1])
+        else:
+            self.move_history.append(['P2', hole_choice + 1])
 
         self.move_count += 1
         self.move_count_fine[self.current_player] += 1
@@ -94,9 +97,12 @@ class Mancala:
         if hand_index != 0 or current_side == self.current_player:
             self.current_player = (self.current_player + 1) % 2
 
-    def print_board(self):
+    def print_board(self, player=-1):
         print(' __________________________________________________________________________')
-        print('|   P2                                                                    |')
+        if player == 1:
+            print('|   P2         6        5        4        3        2        1             |')
+        else:
+            print('|   P2                                                                    |')
         print('|  _____     _____    _____    _____    _____    _____    _____    _____  |')
 
         # Opponent side
@@ -113,7 +119,7 @@ class Mancala:
             else:
                 print('  %s  |  |' % str(self.board[1][i]), end='')
 
-        print('| |     |   [_____]  [_____]  [_____]  [_____]  [_____]  [_____]  |     | |')
+        print('| |     |   |_____|  |_____|  |_____|  |_____|  |_____|  |_____|  |     | |')
 
         # Mancala scores
         if self.pot[1] > 9:
@@ -143,8 +149,11 @@ class Mancala:
             else:
                 print('  %s  |  |' % str(self.board[0][i]), end='')
 
-        print('| |_____|   [_____]  [_____]  [_____]  [_____]  [_____]  [_____]  |_____| |')
-        print('|              1        2        3        4        5        6        P1   |')
+        print('| |_____|   |_____|  |_____|  |_____|  |_____|  |_____|  |_____|  |_____| |')
+        if player == 0:
+            print('|              1        2        3        4        5        6        P1   |')
+        else:
+            print('|                                                                    P1   |')
         print(' __________________________________________________________________________')
 
 
@@ -472,14 +481,10 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
             win_count[2] += 1
 
         # Start new game
-        if longest_game is None:
-            longest_game = Mancala(game)
-        elif len(game.move_history) > len(longest_game.move_history):
+        if longest_game is None or len(game.move_history) > len(longest_game.move_history):
             longest_game = Mancala(game)
 
-        if shortest_game is None:
-            shortest_game = Mancala(game)
-        elif len(game.move_history) < len(shortest_game.move_history):
+        if shortest_game is None or len(game.move_history) < len(shortest_game.move_history):
             shortest_game = Mancala(game)
 
         game.__init__()
@@ -517,11 +522,11 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
         print('', end='')
         score_norm = [score_count[0], score_count[1]]
 
-        if score_norm[0] >= score_norm[1]:
+        if score_norm[0] >= score_norm[1] != 0:
             score_norm[0] = int((score_norm[0] / score_norm[1]) * 10000)
             score_norm[0] /= 10000
             score_norm[1] = 1.0
-        else:
+        elif score_norm[0] != 0:
             score_norm[1] = int((score_norm[1] / score_norm[0]) * 10000)
             score_norm[1] /= 10000
             score_norm[0] = 1.0
@@ -554,6 +559,7 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
             print('Win Percentage: %s / %s' % (win_percentage[0], win_percentage[1]))
             print('Longest game: %s moves' % len(longest_game.move_history))
             print('Shortest game: %s moves' % len(shortest_game.move_history))
+            print(shortest_game.move_history)
             print('\n')
 
         return [score_count, score_norm, win_count, strategy, longest_game, shortest_game]
@@ -597,7 +603,7 @@ def human_game(game: object, computer_strat=None, two_player=None):
     if game.current_player == 0:
         play = human_move() - 1
         game.play_move(play)
-        game.print_board()
+        game.print_board(player=game.current_player)
         print('P1 plays hole %s' % str(play + 1))
         if game.current_player == 0:
             print('Play Again')
@@ -605,7 +611,7 @@ def human_game(game: object, computer_strat=None, two_player=None):
     elif two_player:
         play = human_move(player='P2') - 1
         game.play_move(play)
-        game.print_board()
+        game.print_board(player=game.current_player)
         print('P2 plays hole %s' % str(play + 1))
         if game.current_player == 1:
             print('Play Again')
@@ -617,9 +623,15 @@ def human_game(game: object, computer_strat=None, two_player=None):
 
     if not game.game_over:
         human_game(game, two_player=two_player)
+    else:
+        game.print_board()
+        if game.pot[0] > game.pot[1]:
+            print('P1 Wins')
+        else:
+            print('P2 Wins')
 
 
-sim_depth = 10000
+sim_depth = 1000000
 strategies = [random_hole_strategy,
               offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
               last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
@@ -638,6 +650,8 @@ opponent_strat = offensive_strategy
 
 if not human_play:
     if sim_all_strat_combos:
+
+        # Make list of all combinations of strategies
         all_combinations = []
         for strat in itertools.product(strategies, strategies):
             if strat not in all_combinations:
@@ -668,12 +682,9 @@ if not human_play:
             simulate_games(10, strat1=s[0], strat2=s[1])
 
     elif len(strategies) > 1:
-        output = simulate_games(sim_depth, strat1=strategies[0], strat2=strategies[1])
-
-        # Print shortest game move history
-        print(output[-1].move_history)
+        simulate_games(sim_depth, strat1=strategies[0], strat2=strategies[1])
 
 else:
     g = Mancala()
-    g.print_board()
+    g.print_board(player=g.current_player)
     human_game(g, computer_strat=opponent_strat, two_player=human_vs_human)
