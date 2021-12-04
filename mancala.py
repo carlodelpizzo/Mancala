@@ -1,5 +1,6 @@
 import random
 import itertools
+import time
 
 
 class Mancala:
@@ -432,6 +433,8 @@ def second_turn_strategy(game: object, give_name=False):
 
 # Simulation function; Simulates [depth] number of games with player 1 using Strat1
 def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, print_result=True):
+    global global_list
+
     if strat1 is None or strat2 is None:
         return False
 
@@ -448,6 +451,8 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
     shortest_game = None
     win_count = [0, 0, 0]
     counter = 0
+    time_remain = 'minutes'
+    global_list[1] = time.time()
 
     while True:
         # Strat vs Strat
@@ -483,9 +488,25 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
         counter += 1
 
         if show_progress:
-            print('\r' + str(counter) + ' of ' + str(depth) + ' :: ' + str(int((counter / depth) * 10000) / 100) + '%',
+            global_list[2] = time.time()
+            if (int((counter / depth) * 10000) / 100) != global_list[0]:
+                global_list[0] = int((counter / depth) * 10000) / 100
+                global_list[3] = (global_list[2] - global_list[1]) * ((100 - global_list[0]) * 100)
+                global_list[3] /= 60
+
+                if global_list[3] < 60:
+                    time_remain = 'minutes'
+                elif global_list[3] > 60 and time_remain != 'hours':
+                    time_remain = 'hours'
+                    global_list[3] /= 60
+
+                global_list[3] = int(global_list[3] * 100) / 100
+
+                global_list[1] = time.time()
+
+            print('\r' + str(counter) + ' of ' + str(depth) + ' :: ' + str(global_list[0]) + '%',
                   end='')
-            print(' :: %s' % strategy, end='')
+            print(' :: %s :: Estimated time remaining: %s %s' % (strategy, global_list[3], time_remain), end='')
 
         if counter != depth:
             continue
@@ -578,9 +599,10 @@ def human_game(game: object, computer_strat=None):
         human_game(game)
 
 
-sim_depth = 1000
+global_list = [0.0, 0.0, 0.0, 0.0]
+sim_depth = 100000
 strategies = [random_hole_strategy,
-              random_hole_strategy, offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
+              offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
               last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
 
 # If false: will simulate the first two strategies in above list
