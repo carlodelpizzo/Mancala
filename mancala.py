@@ -532,7 +532,4 @@ if not human_play:
 else:
     g = Mancala()
     g.print_board()
-    # print('Board Format:')
-    # print('[[P1 Side], [P2 Side]] [P1 Mancala, P2 Mancala]')
-    # print(g.board, g.pot)
     human_game(g, offensive_strategy)
