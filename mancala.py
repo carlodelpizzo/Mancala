@@ -246,6 +246,29 @@ def heaviest_hole_strategy(game: object, prefer_closest=True, give_name=False):
     game.play_move(heaviest)
 
 
+def lightest_hole_strategy(game: object, prefer_closest=True, give_name=False):
+    if give_name:
+        return 'lightest hole'
+    if game is None:
+        game = Mancala()
+
+    if prefer_closest:
+        lightest = game.max_index
+        for h in reversed(range(game.max_index + 1)):
+            if game.board[game.current_player][h] < game.board[game.current_player][lightest]:
+                lightest = h
+
+        game.play_move(lightest)
+        return
+
+    lightest = 0
+    for h in range(game.max_index + 1):
+        if game.board[game.current_player][h] < game.board[game.current_player][lightest]:
+            lightest = h
+
+    game.play_move(lightest)
+
+
 def offensive_strategy(game: object, give_name=False):
     def offensive_value_function(game_: object, hole_choice: int):
         if game_ is None:
@@ -270,17 +293,6 @@ def offensive_strategy(game: object, give_name=False):
         if (game_.max_index + 1) - hole_choice <= bead_count:
             utility += (1 + int(bead_count / cycle_number))
 
-        # If move ends on opposing players side
-        if final_index >= 7:
-            for i in reversed(range(0, final_index - (game_.max_index + 1))):
-                # If move blocks opposing player from potential 2nd turn
-                if ((game_.max_index + 1) - i) == game_.board[opp_player][i] % cycle_number:
-                    utility += 0.5
-
-                # If move gives opposing player a potential 2nd turn
-                elif ((game_.max_index + 1) - i) == (game_.board[opp_player][i] + full_passes + 1) % cycle_number:
-                    utility -= 0.5
-
         # If move captures opposing beads
         if full_passes == 0 and 0 <= final_index <= game_.max_index:
             if final_index == hole_choice or game_.board[game_.current_player][final_index] == 0:
@@ -304,10 +316,11 @@ def offensive_strategy(game: object, give_name=False):
         game.play_move((best_moves[ran][0]))
 
 
-def second_turn_strategy(game: object, give_name=False):
-    def second_turn_value_function(game_: object, hole_choice: int):
+def defensive_strategy(game: object, give_name=False):
+    def defensive_value_function(game_: object, hole_choice: int):
         if game_ is None:
             game_ = Mancala()
+
         if game_.board[game_.current_player][hole_choice] == 0:
             return False
 
@@ -329,14 +342,62 @@ def second_turn_strategy(game: object, give_name=False):
 
         # If move ends on opposing players side
         if final_index >= 7:
-            for i in reversed(range(0, final_index - (game_.max_index + 1))):
-                # If move blocks opposing player from potential 2nd turn
-                if ((game_.max_index + 1) - i) == game_.board[opp_player][i] % cycle_number:
-                    utility += 0.5
+            new_index = final_index - (game_.max_index + 1)
+            for i in reversed(range(0, new_index)):
+                # If move blocks opposing player from potential capture
+                if game_.board[opp_player][(new_index - i)] == 0:
+                    utility += game_.board[game_.current_player][game_.max_index - (new_index - i)]
 
-                # If move gives opposing player a potential 2nd turn
-                elif ((game_.max_index + 1) - i) == (game_.board[opp_player][i] + full_passes + 1) % cycle_number:
-                    utility -= 0.5
+        # If opposing player has any empty holes
+        for i in range(0, game_.max_index):
+            if game_.board[opp_player][i] == 0 and (game_.max_index - i) == hole_choice:
+                utility += 20
+
+        # If move captures opposing beads
+        if full_passes == 0 and 0 <= final_index <= game_.max_index:
+            if final_index == hole_choice or game_.board[game_.current_player][final_index] == 0:
+                utility += 3
+
+        return utility
+
+    if give_name:
+        return 'defensive'
+    if game is None:
+        game = Mancala()
+
+    best_moves = find_highest_value(game, defensive_value_function)
+
+    if best_moves[0][1] == 0:
+        random_hole_strategy(game)
+    elif len(best_moves) == 1:
+        game.play_move(best_moves[0][0])
+    else:
+        ran = random.randint(0, len(best_moves) - 1)
+        game.play_move((best_moves[ran][0]))
+
+
+def second_turn_strategy(game: object, give_name=False):
+    def second_turn_value_function(game_: object, hole_choice: int):
+        if game_ is None:
+            game_ = Mancala()
+        if game_.board[game_.current_player][hole_choice] == 0:
+            return False
+
+        hole_choice = hole_choice % (game_.max_index + 1)
+        bead_count = game_.board[game_.current_player][hole_choice]
+        cycle_number = (((game_.max_index + 1) * 2) + 1)
+        # opp_player = (game_.current_player + 1) % 2
+        final_index = (hole_choice + bead_count) % cycle_number
+        full_passes = int((bead_count - 1) / cycle_number)
+        utility = 0
+
+        # If move results in 2nd turn
+        if (game_.max_index + 1) - hole_choice == bead_count % cycle_number:
+            utility += 10
+
+        # Number of beads landing in pot
+        if (game_.max_index + 1) - hole_choice <= bead_count:
+            utility += (1 + int(bead_count / cycle_number))
 
         # If move captures opposing beads
         if full_passes == 0 and 0 <= final_index <= game_.max_index:
