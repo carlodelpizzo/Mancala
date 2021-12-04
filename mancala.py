@@ -439,13 +439,7 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
         return False
 
     game = Mancala()
-    strategy = ''
-
-    if strat1 is not None and strat2 is not None:
-        strat1_name = strat1(game, give_name=True)
-        strat2_name = strat2(game, give_name=True)
-        strategy = strat1_name + ' vs ' + strat2_name
-
+    strategy = strat1(game, give_name=True) + ' vs ' + strat2(game, give_name=True)
     score_count = [0, 0]
     longest_game = None
     shortest_game = None
@@ -480,7 +474,7 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
 
         if shortest_game is None:
             shortest_game = Mancala(game)
-        elif len(game.move_history) < len(longest_game.move_history):
+        elif len(game.move_history) < len(shortest_game.move_history):
             shortest_game = Mancala(game)
 
         game.__init__()
@@ -592,16 +586,16 @@ def human_game(game: object, computer_strat=None):
 
 
 global_list = [0.0, 0.0, 0.0, 0.0]
-sim_depth = 42000000
+sim_depth = 4200
 strategies = [random_hole_strategy,
-              random_hole_strategy, offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
+              offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
               last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
 
 # If false: will simulate the first two strategies in above list
-sim_all_strat_combos = False
+sim_all_strat_combos = True
 
 # If true: will override simulation and present human vs computer game with computer using strategy below
-human_play = True
+human_play = False
 opponent_strat = offensive_strategy
 
 if not human_play:
