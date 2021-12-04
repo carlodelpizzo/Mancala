@@ -477,6 +477,7 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
         if show_progress:
             print('\r' + str(counter) + ' of ' + str(depth) + ' :: ' + str(int((counter / depth) * 100) / 100) + '%',
                   end='')
+            print(' :: %s' % strategy, end='')
 
         if counter != depth:
             continue
