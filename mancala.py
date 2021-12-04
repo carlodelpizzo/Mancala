@@ -610,6 +610,10 @@ if not human_play:
         # Simulate games
         for s in all_combinations:
             simulate_games(sim_depth, strat1=s[0], strat2=s[1])
+
+        # Run small sample of determinist games
+        for s in d:
+            simulate_games(10, strat1=s[0], strat2=s[1])
     elif len(strategies) != 0:
         simulate_games(sim_depth, strat1=strategies[0], strat2=strategies[1])
 
