@@ -451,7 +451,6 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
     shortest_game = None
     win_count = [0, 0, 0]
     counter = 0
-    time_remain = 'minutes'
     global_list[1] = time.time()
 
     while True:
@@ -493,20 +492,13 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
                 global_list[0] = int((counter / depth) * 10000) / 100
                 global_list[3] = (global_list[2] - global_list[1]) * ((100 - global_list[0]) * 100)
                 global_list[3] /= 60
-
-                if global_list[3] < 60:
-                    time_remain = 'minutes'
-                elif global_list[3] > 60 and time_remain != 'hours':
-                    time_remain = 'hours'
-                    global_list[3] /= 60
-
                 global_list[3] = int(global_list[3] * 100) / 100
 
                 global_list[1] = time.time()
 
             print('\r' + str(counter) + ' of ' + str(depth) + ' :: ' + str(global_list[0]) + '%',
                   end='')
-            print(' :: %s :: Estimated time remaining: %s %s' % (strategy, global_list[3], time_remain), end='')
+            print(' :: %s :: Estimated time remaining: %s minuets' % (strategy, global_list[3]), end='')
 
         if counter != depth:
             continue
@@ -600,13 +592,13 @@ def human_game(game: object, computer_strat=None):
 
 
 global_list = [0.0, 0.0, 0.0, 0.0]
-sim_depth = 100000
+sim_depth = 42000000
 strategies = [random_hole_strategy,
-              offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
+              random_hole_strategy, offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
               last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
 
 # If false: will simulate the first two strategies in above list
-sim_all_strat_combos = True
+sim_all_strat_combos = False
 
 # If true: will override simulation and present human vs computer game with computer using strategy below
 human_play = True
