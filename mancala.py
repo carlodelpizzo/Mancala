@@ -231,7 +231,7 @@ def heaviest_hole_strategy(game: object, prefer_closest=True, give_name=False):
 
     if prefer_closest:
         heaviest = game.max_index
-        for h in reversed(range(0, game.max_index)):
+        for h in reversed(range(0, game.max_index + 1)):
             if game.board[game.current_player][h] > game.board[game.current_player][heaviest]:
                 heaviest = h
 
@@ -239,7 +239,7 @@ def heaviest_hole_strategy(game: object, prefer_closest=True, give_name=False):
         return
 
     heaviest = 0
-    for h in range(0, game.max_index):
+    for h in range(0, game.max_index + 1):
         if game.board[game.current_player][h] > game.board[game.current_player][heaviest]:
             heaviest = h
 
@@ -254,7 +254,7 @@ def lightest_hole_strategy(game: object, prefer_closest=True, give_name=False):
 
     if prefer_closest:
         lightest = None
-        for l in reversed(range(0, game.max_index)):
+        for l in reversed(range(0, game.max_index + 1)):
             if game.board[game.current_player][l] == 0:
                 continue
             if lightest is None:
@@ -266,7 +266,7 @@ def lightest_hole_strategy(game: object, prefer_closest=True, give_name=False):
         return
 
     lightest = None
-    for l in range(0, game.max_index):
+    for l in range(0, game.max_index + 1):
         if game.board[game.current_player][l] == 0:
             continue
         if lightest is None:
@@ -483,7 +483,7 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
         counter += 1
 
         if show_progress:
-            print('\r' + str(counter) + ' of ' + str(depth) + ' :: ' + str(int((counter / depth) * 100) / 100) + '%',
+            print('\r' + str(counter) + ' of ' + str(depth) + ' :: ' + str(int((counter / depth) * 10000) / 100) + '%',
                   end='')
             print(' :: %s' % strategy, end='')
 
@@ -581,7 +581,7 @@ def human_game(game: object, computer_strat=None):
 sim_depth = 1000
 strategies = [random_hole_strategy, offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
               last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
-sim_all_strat_combos = False
+sim_all_strat_combos = True
 human_play = True
 
 if not human_play:
@@ -591,6 +591,23 @@ if not human_play:
             if strat not in all_combinations:
                 all_combinations.append(strat)
 
+        # Remove deterministic games
+        deterministic = [first_hole_strategy, last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
+        d = []
+        pop_list = [0]
+        for strat in itertools.product(deterministic, deterministic):
+            d.append(strat)
+
+        for fight in all_combinations:
+            for deez_nuts in d:
+                if deez_nuts == fight:
+                    pop_list.append(all_combinations.index(fight))
+
+        pop_list.sort(reverse=True)
+        for pop_i in pop_list:
+            all_combinations.pop(pop_i)
+
+        # Simulate games
         for s in all_combinations:
             simulate_games(sim_depth, strat1=s[0], strat2=s[1])
     elif len(strategies) != 0:
