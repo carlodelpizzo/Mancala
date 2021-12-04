@@ -101,6 +101,59 @@ class Mancala:
         if hand_index != 0 or current_side == self.current_player:
             self.current_player = (self.current_player + 1) % 2
 
+    def print_board(self):
+        print(' __________________________________________________________________________')
+        print('|   P2                                                                    |')
+        print('|  _____     _____    _____    _____    _____    _____    _____    _____  |')
+
+        # Opponent side
+        print('| |     |   |', end='')
+        for i in reversed(range(0, self.max_index + 1)):
+            if i == 0:
+                if self.board[1][i] > 9:
+                    print('  %s |  |     | |' % str(self.board[1][i]))
+                else:
+                    print('  %s  |  |     | |' % str(self.board[1][i]))
+                continue
+            if self.board[1][i] > 9:
+                print('  %s |  |' % str(self.board[1][i]), end='')
+            else:
+                print('  %s  |  |' % str(self.board[1][i]), end='')
+
+        print('| |     |   [_____]  [_____]  [_____]  [_____]  [_____]  [_____]  |     | |')
+
+        # Mancala scores
+        if self.pot[1] > 9:
+            print('| |  %s |                                                         ' % self.pot[1], end='')
+        else:
+            print('| |  %s  |                                                         ' % self.pot[1], end='')
+
+        # Player mancala
+        if self.pot[0] > 9:
+            print('|  %s | |' % self.pot[0])
+        else:
+            print('|  %s  | |' % self.pot[0])
+
+        print('| |     |    _____    _____    _____    _____    _____    _____   |     | |')
+
+        # Player side
+        print('| |     |   |', end='')
+        for i in range(0, self.max_index + 1):
+            if i == self.max_index:
+                if self.board[0][i] > 9:
+                    print('  %s |  |     | |' % str(self.board[0][i]))
+                else:
+                    print('  %s  |  |     | |' % str(self.board[0][i]))
+                continue
+            if self.board[0][i] > 9:
+                print('  %s |  |' % str(self.board[0][i]), end='')
+            else:
+                print('  %s  |  |' % str(self.board[0][i]), end='')
+
+        print('| |_____|   [_____]  [_____]  [_____]  [_____]  [_____]  [_____]  |_____| |')
+        print('|              1        2        3        4        5        6        P1   |')
+        print(' __________________________________________________________________________')
+
 
 # Returns list of holes which have the highest value for current player using passed value function
 # [hole index, move value]
@@ -436,8 +489,7 @@ def human_game(game: object, computer_strat=None):
 
             else:
                 try:
-                    print('Invalid selection; Select: 1 - %s' % (game.max_index + 1))
-                    move = int(input('Select hole:\n'))
+                    move = int(input('Invalid selection; Select: 1 - %s\n' % (game.max_index + 1)))
                 except ValueError:
                     move = 0
 
@@ -447,21 +499,23 @@ def human_game(game: object, computer_strat=None):
 
         move_ = player1_move() - 1
         game.play_move(move_)
-        print('P1 plays hole %s' % str(move_ + 1), game.board, game.pot)
+        game.print_board()
+        print('P1 plays hole %s' % str(move_ + 1))
         if game.current_player == 0:
             print('Play Again')
     else:
         computer_strat(game)
-        print('P2 plays hole %s' % str(game.move_history[-1][1] + 1), game.board, game.pot)
+        game.print_board()
+        print('P2 plays hole %s' % str(game.move_history[-1][1] + 1))
 
     if not game.game_over:
         human_game(game)
 
 
 sim_depth = 10000
-strategies = [second_turn_strategy, offensive_strategy]
+strategies = [random_hole_strategy]
 sim_all_strat_combos = True
-human_play = False
+human_play = True
 
 if not human_play:
     if sim_all_strat_combos:
@@ -477,7 +531,8 @@ if not human_play:
 
 else:
     g = Mancala()
-    print('Board Format:')
-    print('[[P1 Side], [P2 Side]] [P1 Mancala, P2 Mancala]')
-    print(g.board, g.pot)
+    g.print_board()
+    # print('Board Format:')
+    # print('[[P1 Side], [P2 Side]] [P1 Mancala, P2 Mancala]')
+    # print(g.board, g.pot)
     human_game(g, offensive_strategy)
