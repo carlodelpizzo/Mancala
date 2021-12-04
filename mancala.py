@@ -31,6 +31,8 @@ class Mancala:
         if self.board[self.current_player][hole_choice] == 0:
             return False
 
+        self.move_history.append([self.current_player, hole_choice])
+
         self.move_count += 1
         self.move_count_fine[self.current_player] += 1
         hand_index = hole_choice + 1
@@ -87,8 +89,6 @@ class Mancala:
 
             self.game_over = True
             return
-
-        self.move_history.append([self.current_player, hole_choice])
 
         # Check if player gets second turn
         if hand_index != 0 or current_side == self.current_player:
@@ -559,50 +559,67 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
         return [score_count, score_norm, win_count, strategy, longest_game, shortest_game]
 
 
-def human_game(game: object, computer_strat=None):
+def human_game(game: object, computer_strat=None, two_player=None):
     if game is None:
         game = Mancala()
     if computer_strat is None:
         computer_strat = random_hole_strategy
+    if two_player is None:
+        two_player = False
+
+    def human_move(move=-1, player='P1'):
+        if move == -1:
+            try:
+                move = int(input('%s Select hole:\n' % player))
+            except ValueError:
+                move = 0
+
+            if 1 > move or move > game.max_index + 1:
+                if player != 'P1':
+                    human_move(move, player=player)
+                else:
+                    human_move(move)
+            return move
+
+        else:
+            try:
+                move = int(input('Invalid selection; Select: 1 - %s\n' % (game.max_index + 1)))
+            except ValueError:
+                move = 0
+
+            if 1 > move or move > game.max_index + 1:
+                if player != 'P1':
+                    human_move(move, player=player)
+                else:
+                    human_move(move)
+            return move
 
     if game.current_player == 0:
-        def player1_move(move=-1):
-            if move == -1:
-                try:
-                    move = int(input('Select hole:\n'))
-                except ValueError:
-                    move = 0
-
-                if 1 > move or move > game.max_index + 1:
-                    player1_move(move)
-                return move
-
-            else:
-                try:
-                    move = int(input('Invalid selection; Select: 1 - %s\n' % (game.max_index + 1)))
-                except ValueError:
-                    move = 0
-
-                if 1 > move or move > game.max_index + 1:
-                    player1_move(move)
-                return move
-
-        move_ = player1_move() - 1
-        game.play_move(move_)
+        play = human_move() - 1
+        game.play_move(play)
         game.print_board()
-        print('P1 plays hole %s' % str(move_ + 1))
+        print('P1 plays hole %s' % str(play + 1))
         if game.current_player == 0:
             print('Play Again')
+
+    elif two_player:
+        play = human_move(player='P2') - 1
+        game.play_move(play)
+        game.print_board()
+        print('P2 plays hole %s' % str(play + 1))
+        if game.current_player == 1:
+            print('Play Again')
+
     else:
         computer_strat(game)
         game.print_board()
         print('P2 plays hole %s' % str(game.move_history[-1][1] + 1))
 
     if not game.game_over:
-        human_game(game)
+        human_game(game, two_player=two_player)
 
 
-sim_depth = 1000000
+sim_depth = 10000
 strategies = [random_hole_strategy,
               offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
               last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
@@ -611,7 +628,12 @@ strategies = [random_hole_strategy,
 sim_all_strat_combos = True
 
 # If true: will override simulation and present human vs computer game with computer using strategy below
-human_play = True
+human_play = False
+
+# Two Player Game
+human_vs_human = True
+
+# Computer strategy
 opponent_strat = offensive_strategy
 
 if not human_play:
@@ -644,10 +666,14 @@ if not human_play:
         # Run small sample of determinist games
         for s in d:
             simulate_games(10, strat1=s[0], strat2=s[1])
+
     elif len(strategies) > 1:
-        simulate_games(sim_depth, strat1=strategies[0], strat2=strategies[1])
+        output = simulate_games(sim_depth, strat1=strategies[0], strat2=strategies[1])
+
+        # Print shortest game move history
+        print(output[-1].move_history)
 
 else:
     g = Mancala()
     g.print_board()
-    human_game(g, computer_strat=opponent_strat)
+    human_game(g, computer_strat=opponent_strat, two_player=human_vs_human)
