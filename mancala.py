@@ -586,7 +586,7 @@ def human_game(game: object, computer_strat=None):
 
 
 global_list = [0.0, 0.0, 0.0, 0.0]
-sim_depth = 4200
+sim_depth = 1000
 strategies = [random_hole_strategy,
               offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
               last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
@@ -595,7 +595,7 @@ strategies = [random_hole_strategy,
 sim_all_strat_combos = True
 
 # If true: will override simulation and present human vs computer game with computer using strategy below
-human_play = False
+human_play = True
 opponent_strat = offensive_strategy
 
 if not human_play:
