@@ -484,15 +484,26 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
             global_list[2] = time.time()
             if (int((counter / depth) * 10000) / 100) != global_list[0]:
                 global_list[0] = int((counter / depth) * 10000) / 100
-                global_list[3] = (global_list[2] - global_list[1]) * ((100 - global_list[0]) * 100)
-                global_list[3] /= 60
+                global_list[3] = ((global_list[2] - global_list[1]) * ((100 - global_list[0]) * 100)) / 60
                 global_list[3] = int(global_list[3] * 100) / 100
-
                 global_list[1] = time.time()
+                if len(global_list[-1]) < 100:
+                    global_list[-1].append(global_list[3])
+                else:
+                    global_list[-1].pop(0)
+                    global_list[-1].append(global_list[3])
 
             print('\r' + str(counter) + ' of ' + str(depth) + ' :: ' + str(global_list[0]) + '%',
                   end='')
-            print(' :: %s :: Estimated time remaining: %s minutes' % (strategy, global_list[3]), end='')
+
+            if len(global_list[-1]) > 1:
+                sum_ = 0
+                for i in range(0, len(global_list[-1])):
+                    sum_ += global_list[-1][i]
+                avg_est_time = int(sum_ / len(global_list[-1]) * 100) / 100
+            else:
+                avg_est_time = global_list[3]
+            print(' :: %s :: Estimated time remaining: %s minutes' % (strategy, avg_est_time), end='')
 
         if counter != depth:
             continue
@@ -585,8 +596,9 @@ def human_game(game: object, computer_strat=None):
         human_game(game)
 
 
-global_list = [0.0, 0.0, 0.0, 0.0]
-sim_depth = 1000
+# Keep empty list at end of list
+global_list = [0.0, 0.0, 0.0, 0.0, []]
+sim_depth = 10000
 strategies = [random_hole_strategy,
               offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
               last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
