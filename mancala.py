@@ -10,7 +10,6 @@ class Mancala:
             self.pot = [0, 0]
             self.move_count = 0
             self.move_count_fine = [0, 0]
-            self.hand = 0
             self.current_player = 0
             self.game_over = False
             self.move_history = []
@@ -21,7 +20,6 @@ class Mancala:
         self.pot = copy_obj.pot
         self.move_count = copy_obj.move_count
         self.move_count_fine = copy_obj.move_count_fine
-        self.hand = copy_obj.hand
         self.current_player = copy_obj.current_player
         self.game_over = copy_obj.game_over
         self.move_history = copy_obj.move_history
@@ -36,22 +34,17 @@ class Mancala:
         self.move_count_fine[self.current_player] += 1
         hand_index = hole_choice + 1
         current_side = self.current_player
-        self.hand = self.board[self.current_player][hole_choice]
+        hand = self.board[self.current_player][hole_choice]
         self.board[self.current_player][hole_choice] = 0
 
-        if self.hand == 0:
-            return
-
         # Distribute beads
-        while self.hand > 0:
+        for i in range(0, hand):
             if 0 <= hand_index <= self.max_index:
                 self.board[current_side][hand_index] += 1
-                self.hand -= 1
                 hand_index += 1
 
             elif current_side == self.current_player and hand_index > self.max_index:
                 self.pot[current_side] += 1
-                self.hand -= 1
                 hand_index = 0
                 current_side = (current_side + 1) % 2
 
@@ -59,7 +52,6 @@ class Mancala:
                 hand_index = 0
                 current_side = (current_side + 1) % 2
                 self.board[current_side][hand_index] += 1
-                self.hand -= 1
                 hand_index += 1
 
         # Special condition for capture
