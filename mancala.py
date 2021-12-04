@@ -433,7 +433,8 @@ def second_turn_strategy(game: object, give_name=False):
 
 # Simulation function; Simulates [depth] number of games with player 1 using Strat1
 def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, print_result=True):
-    global global_list
+    # Keep empty list at end of list
+    book_of_time = [0.0, 0.0, 0.0, 0.0, []]
 
     if strat1 is None or strat2 is None:
         return False
@@ -445,7 +446,7 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
     shortest_game = None
     win_count = [0, 0, 0]
     counter = 0
-    global_list[1] = time.time()
+    book_of_time[1] = time.time()
 
     while True:
         # Strat vs Strat
@@ -481,28 +482,28 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
         counter += 1
 
         if show_progress:
-            global_list[2] = time.time()
-            if (int((counter / depth) * 10000) / 100) != global_list[0]:
-                global_list[0] = int((counter / depth) * 10000) / 100
-                global_list[3] = ((global_list[2] - global_list[1]) * ((100 - global_list[0]) * 100)) / 60
-                global_list[3] = int(global_list[3] * 100) / 100
-                global_list[1] = time.time()
-                if len(global_list[-1]) < 100:
-                    global_list[-1].append(global_list[3])
+            book_of_time[2] = time.time()
+            if (int((counter / depth) * 10000) / 100) != book_of_time[0]:
+                book_of_time[0] = int((counter / depth) * 10000) / 100
+                book_of_time[3] = ((book_of_time[2] - book_of_time[1]) * ((100 - book_of_time[0]) * 100)) / 60
+                book_of_time[3] = int(book_of_time[3] * 100) / 100
+                book_of_time[1] = time.time()
+                if len(book_of_time[-1]) < 100:
+                    book_of_time[-1].append(book_of_time[3])
                 else:
-                    global_list[-1].pop(0)
-                    global_list[-1].append(global_list[3])
+                    book_of_time[-1].pop(0)
+                    book_of_time[-1].append(book_of_time[3])
 
-            print('\r' + str(counter) + ' of ' + str(depth) + ' :: ' + str(global_list[0]) + '%',
+            print('\r' + str(counter) + ' of ' + str(depth) + ' :: ' + str(book_of_time[0]) + '%',
                   end='')
 
-            if len(global_list[-1]) > 1:
+            if len(book_of_time[-1]) > 1:
                 sum_ = 0
-                for i in range(0, len(global_list[-1])):
-                    sum_ += global_list[-1][i]
-                avg_est_time = int(sum_ / len(global_list[-1]) * 100) / 100
+                for i in range(0, len(book_of_time[-1])):
+                    sum_ += book_of_time[-1][i]
+                avg_est_time = int(sum_ / len(book_of_time[-1]) * 100) / 100
             else:
-                avg_est_time = global_list[3]
+                avg_est_time = book_of_time[3]
             print(' :: %s :: Estimated time remaining: %s minutes' % (strategy, avg_est_time), end='')
 
         if counter != depth:
@@ -596,9 +597,7 @@ def human_game(game: object, computer_strat=None):
         human_game(game)
 
 
-# Keep empty list at end of list
-global_list = [0.0, 0.0, 0.0, 0.0, []]
-sim_depth = 10000
+sim_depth = 1000
 strategies = [random_hole_strategy,
               offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
               last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
