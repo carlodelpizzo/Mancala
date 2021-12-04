@@ -231,7 +231,7 @@ def heaviest_hole_strategy(game: object, prefer_closest=True, give_name=False):
 
     if prefer_closest:
         heaviest = game.max_index
-        for h in reversed(range(game.max_index + 1)):
+        for h in reversed(range(0, game.max_index)):
             if game.board[game.current_player][h] > game.board[game.current_player][heaviest]:
                 heaviest = h
 
@@ -239,7 +239,7 @@ def heaviest_hole_strategy(game: object, prefer_closest=True, give_name=False):
         return
 
     heaviest = 0
-    for h in range(game.max_index + 1):
+    for h in range(0, game.max_index):
         if game.board[game.current_player][h] > game.board[game.current_player][heaviest]:
             heaviest = h
 
@@ -253,18 +253,26 @@ def lightest_hole_strategy(game: object, prefer_closest=True, give_name=False):
         game = Mancala()
 
     if prefer_closest:
-        lightest = game.max_index
-        for h in reversed(range(game.max_index + 1)):
-            if game.board[game.current_player][h] < game.board[game.current_player][lightest]:
-                lightest = h
+        lightest = None
+        for l in reversed(range(0, game.max_index)):
+            if game.board[game.current_player][l] == 0:
+                continue
+            if lightest is None:
+                lightest = l
+            elif game.board[game.current_player][l] < game.board[game.current_player][lightest]:
+                lightest = l
 
         game.play_move(lightest)
         return
 
-    lightest = 0
-    for h in range(game.max_index + 1):
-        if game.board[game.current_player][h] < game.board[game.current_player][lightest]:
-            lightest = h
+    lightest = None
+    for l in range(0, game.max_index):
+        if game.board[game.current_player][l] == 0:
+            continue
+        if lightest is None:
+            lightest = l
+        elif game.board[game.current_player][l] < game.board[game.current_player][lightest]:
+            lightest = l
 
     game.play_move(lightest)
 
@@ -496,11 +504,12 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
 
         win_ratio = [win_count[0], win_count[1]]
 
-        if win_ratio[0] >= win_ratio[1]:
+        if win_ratio[0] >= win_ratio[1] != 0:
             win_ratio[0] = int((win_ratio[0] / win_ratio[1]) * 10000)
             win_ratio[0] /= 10000
             win_ratio[1] = 1.0
-        else:
+
+        elif win_ratio[0] != 0:
             win_ratio[1] = int((win_ratio[1] / win_ratio[0]) * 10000)
             win_ratio[1] /= 10000
             win_ratio[0] = 1.0
@@ -511,11 +520,13 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
         if print_result:
             print('\r%s games played:' % str(depth))
             print(strategy)
-            print('Total Scores: %s / %s | Normalized: %s / %s' %
+            print('Total Scores: %s / %s [%s to %s]' %
                   (score_count[0], score_count[1], score_norm[0], score_norm[1]))
-            print('Win count: %s / %s | Normalized: %s / %s' %
-                  (win_count[0], win_count[1], win_ratio[0], win_ratio[1]))
-            print('Tie %s' % win_count[2])
+            if win_ratio[0] != 0 and win_ratio[1] != 0:
+                print('Win count: %s / %s [%s to %s] | Tie %s' %
+                      (win_count[0], win_count[1], win_ratio[0], win_ratio[1], win_count[2]))
+            else:
+                print('Win count: %s / %s | Tie %s' % (win_count[0], win_count[1], win_count[2]))
             print('Win Percentage: %s / %s' % (win_percentage[0], win_percentage[1]))
             print('Longest game: %s moves' % len(longest_game.move_history))
             print('Shortest game: %s moves' % len(shortest_game.move_history))
