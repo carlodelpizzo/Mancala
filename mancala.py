@@ -74,8 +74,9 @@ class Mancala:
             current_player_sum += hole
 
         other_player_sum = 0
+        other_i = (self.current_player + 1) % 2
 
-        for hole in self.board[(self.current_player + 1) % 2]:
+        for hole in self.board[other_i]:
             other_player_sum += hole
 
         if current_player_sum == 0 or other_player_sum == 0:
@@ -84,8 +85,7 @@ class Mancala:
                 for i in range(len(self.board[self.current_player])):
                     self.board[self.current_player][i] = 0
 
-            elif other_player_sum != 0:
-                other_i = (self.current_player + 1) % 2
+            if other_player_sum != 0:
                 self.pot[other_i] += other_player_sum
                 for i in range(len(self.board[other_i])):
                     self.board[other_i][i] = 0
@@ -105,7 +105,7 @@ class Mancala:
             print('|   P2                                                                    |')
         print('|  _____     _____    _____    _____    _____    _____    _____    _____  |')
 
-        # Opponent side
+        # P2 side
         print('| |     |   |', end='')
         for i in reversed(range(0, self.max_index + 1)):
             if i == 0:
@@ -121,13 +121,13 @@ class Mancala:
 
         print('| |     |   |_____|  |_____|  |_____|  |_____|  |_____|  |_____|  |     | |')
 
-        # Mancala scores
+        # P2 Mancala
         if self.pot[1] > 9:
             print('| |  %s |                                                         ' % self.pot[1], end='')
         else:
             print('| |  %s  |                                                         ' % self.pot[1], end='')
 
-        # Player mancala
+        # P1 mancala
         if self.pot[0] > 9:
             print('|  %s | |' % self.pot[0])
         else:
@@ -135,7 +135,7 @@ class Mancala:
 
         print('| |     |    _____    _____    _____    _____    _____    _____   |     | |')
 
-        # Player side
+        # P1 side
         print('| |     |   |', end='')
         for i in range(0, self.max_index + 1):
             if i == self.max_index:
@@ -640,7 +640,7 @@ strategies = [random_hole_strategy,
 sim_all_strat_combos = True
 
 # If true: will override simulation and present human vs computer game with computer using strategy below
-human_play = False
+human_play = True
 
 # Two Player Game
 human_vs_human = True
