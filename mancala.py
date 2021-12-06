@@ -578,26 +578,26 @@ def human_game(game: object, computer_strat=None, two_player=None):
             try:
                 move = int(input('%s Select hole:\n' % player))
             except ValueError:
-                move = 0
+                move = 420
 
             if 1 > move or move > game.max_index + 1:
                 if player != 'P1':
-                    human_move(move, player=player)
+                    move = human_move(move, player=player)
                 else:
-                    human_move(move)
+                    move = human_move(move)
             return move
 
         else:
             try:
                 move = int(input('Invalid selection; Select: 1 - %s\n' % (game.max_index + 1)))
             except ValueError:
-                move = 0
+                move = 420
 
             if 1 > move or move > game.max_index + 1:
                 if player != 'P1':
-                    human_move(move, player=player)
+                    move = human_move(move, player=player)
                 else:
-                    human_move(move)
+                    move = human_move(move)
             return move
 
     if game.current_player == 0:
