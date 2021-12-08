@@ -619,10 +619,10 @@ def human_game(game: object, computer_strat=None, two_player=None):
     else:
         computer_strat(game)
         game.print_board()
-        print('P2 plays hole %s' % str(game.move_history[-1][1] + 1))
+        print('P2 plays hole %s' % str(game.move_history[-1][1]))
 
     if not game.game_over:
-        human_game(game, two_player=two_player)
+        human_game(game, computer_strat=computer_strat, two_player=two_player)
     else:
         game.print_board()
         if game.pot[0] > game.pot[1]:
@@ -631,7 +631,7 @@ def human_game(game: object, computer_strat=None, two_player=None):
             print('P2 Wins')
 
 
-sim_depth = 1000000
+sim_depth = 10000
 strategies = [random_hole_strategy,
               offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
               last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
@@ -640,10 +640,10 @@ strategies = [random_hole_strategy,
 sim_all_strat_combos = True
 
 # If true: will override simulation and present human vs computer game with computer using strategy below
-human_play = True
+human_play = False
 
 # Two Player Game
-human_vs_human = True
+human_vs_human = False
 
 # Computer strategy
 opponent_strat = offensive_strategy
