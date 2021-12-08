@@ -97,7 +97,7 @@ class Mancala:
         if hand_index != 0 or current_side == self.current_player:
             self.current_player = (self.current_player + 1) % 2
 
-    def print_board(self, player=-1):
+    def print_board(self, player=-1, last_hole=0):
         print(' __________________________________________________________________________')
         if player == 1:
             print('|   P2         6        5        4        3        2        1             |')
@@ -121,11 +121,36 @@ class Mancala:
 
         print('| |     |   |_____|  |_____|  |_____|  |_____|  |_____|  |_____|  |     | |')
 
-        # P2 Mancala
+        # P2 Mancala and last hole played
         if self.pot[1] > 9:
-            print('| |  %s |                                                         ' % self.pot[1], end='')
+            temp = '| |  %s |' % self.pot[1]
         else:
-            print('| |  %s  |                                                         ' % self.pot[1], end='')
+            temp = '| |  %s  |' % self.pot[1]
+        p2_last_hole = ['                                                   ^     ',
+                        '                                          ^              ',
+                        '                                 ^                       ',
+                        '                        ^                                ',
+                        '               ^                                         ',
+                        '      ^                                                  ']
+        p1_last_hole = ['      v                                                  ',
+                        '               v                                         ',
+                        '                        v                                ',
+                        '                                 v                       ',
+                        '                                          v              ',
+                        '                                                   v     ']
+        for i in range(len(p2_last_hole)):
+            p2_last_hole[i] = temp + p2_last_hole[i]
+        for i in range(len(p1_last_hole)):
+            p1_last_hole[i] = temp + p1_last_hole[i]
+        if last_hole < 0:
+            print(p2_last_hole[(last_hole * -1) - 1], end='')
+        elif last_hole > 0:
+            print(p1_last_hole[last_hole - 1], end='')
+        else:
+            if self.pot[1] > 9:
+                print('| |  %s |                                                         ' % self.pot[1], end='')
+            else:
+                print('| |  %s  |                                                         ' % self.pot[1], end='')
 
         # P1 mancala
         if self.pot[0] > 9:
@@ -154,7 +179,7 @@ class Mancala:
             print('|              1        2        3        4        5        6        P1   |')
         else:
             print('|                                                                    P1   |')
-        print(' __________________________________________________________________________')
+        print('|_________________________________________________________________________|')
 
 
 # Returns list of holes which have the highest value for current player using passed value function
@@ -603,7 +628,7 @@ def human_game(game: object, computer_strat=None, two_player=None):
     if game.current_player == 0:
         play = human_move() - 1
         game.play_move(play)
-        game.print_board(player=game.current_player)
+        game.print_board(player=game.current_player, last_hole=game.move_history[-1][1])
         print('P1 plays hole %s' % str(play + 1))
         if game.current_player == 0:
             print('Play Again')
@@ -611,14 +636,14 @@ def human_game(game: object, computer_strat=None, two_player=None):
     elif two_player:
         play = human_move(player='P2') - 1
         game.play_move(play)
-        game.print_board(player=game.current_player)
+        game.print_board(player=game.current_player, last_hole=(game.move_history[-1][1] * -1))
         print('P2 plays hole %s' % str(play + 1))
         if game.current_player == 1:
             print('Play Again')
 
     else:
         computer_strat(game)
-        game.print_board()
+        game.print_board(player=game.current_player, last_hole=(game.move_history[-1][1] * -1))
         print('P2 plays hole %s' % str(game.move_history[-1][1]))
 
     if not game.game_over:
