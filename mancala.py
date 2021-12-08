@@ -702,7 +702,7 @@ if not human_play:
         for s in all_combinations:
             simulate_games(sim_depth, strat1=s[0], strat2=s[1])
 
-        # Run small sample of determinist games
+        # Run small sample of deterministic games
         for s in d:
             simulate_games(10, strat1=s[0], strat2=s[1])
 
