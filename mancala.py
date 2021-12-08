@@ -473,6 +473,9 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
     book_length = 100
     avg_sum = 0
     avg_est_time = 0
+    game_histories = []
+    deterministic = False
+    det_check = True
 
     if strat1 is None or strat2 is None:
         return False
@@ -512,6 +515,8 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
         if shortest_game is None or len(game.move_history) < len(shortest_game.move_history):
             shortest_game = Mancala(game)
 
+        if det_check:
+            game_histories.append(game.move_history)
         game.__init__()
         counter += 1
 
@@ -541,7 +546,18 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
 
             print(' :: %s :: Estimated time remaining: %s minutes' % (strategy, avg_est_time), end='')
 
-        if counter != depth:
+        # Check if games play out deterministically
+        if counter == 69:
+            deterministic = True
+            for history in game_histories:
+                for history2 in game_histories:
+                    if history != history2:
+                        deterministic = False
+                        det_check = False
+                        game_histories = []
+                        break
+
+        if counter != depth and not deterministic:
             continue
 
         print('', end='')
@@ -572,7 +588,10 @@ def simulate_games(depth: int, strat1=None, strat2=None, show_progress=True, pri
                           str(int((win_count[1] / depth) * 10000) / 100) + '%']
 
         if print_result:
-            print('\r%s games played:' % str(depth))
+            if counter != depth:
+                print('\rDETERMINISTIC: Stopped simulation after %s games' % str(counter))
+            else:
+                print('\r%s games played:' % str(counter))
             print(strategy)
             print('Total Scores: %s / %s [%s to %s]' %
                   (score_count[0], score_count[1], score_norm[0], score_norm[1]))
@@ -656,7 +675,7 @@ def human_game(game: object, computer_strat=None, two_player=None):
             print('P2 Wins')
 
 
-sim_depth = 10000
+sim_depth = 1000
 strategies = [random_hole_strategy,
               offensive_strategy, defensive_strategy, second_turn_strategy, first_hole_strategy,
               last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
@@ -682,29 +701,9 @@ if not human_play:
             if strat not in all_combinations:
                 all_combinations.append(strat)
 
-        # Remove deterministic games
-        deterministic = [first_hole_strategy, last_hole_strategy, heaviest_hole_strategy, lightest_hole_strategy]
-        d = []
-        pop_list = []
-        for strat in itertools.product(deterministic, deterministic):
-            d.append(strat)
-
-        for fight in all_combinations:
-            for deez_nuts in d:
-                if deez_nuts == fight:
-                    pop_list.append(all_combinations.index(fight))
-
-        pop_list.sort(reverse=True)
-        for pop_i in pop_list:
-            all_combinations.pop(pop_i)
-
         # Simulate games
         for s in all_combinations:
             simulate_games(sim_depth, strat1=s[0], strat2=s[1])
-
-        # Run small sample of deterministic games
-        for s in d:
-            simulate_games(10, strat1=s[0], strat2=s[1])
 
     elif len(strategies) > 1:
         simulate_games(sim_depth, strat1=strategies[0], strat2=strategies[1])
