@@ -640,7 +640,7 @@ strategies = [random_hole_strategy,
 sim_all_strat_combos = True
 
 # If true: will override simulation and present human vs computer game with computer using strategy below
-human_play = False
+human_play = True
 
 # Two Player Game
 human_vs_human = False
