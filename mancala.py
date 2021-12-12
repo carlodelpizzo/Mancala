@@ -291,7 +291,7 @@ def offensive_value_function2(game: object, hole_choice: int):
         new_game = Mancala(game)
         new_game.play_move(hole_choice)
         for i in range(new_game.max_index + 1):
-            if (new_game.max_index + 1) - i == new_game.board[game.current_player][i] % cycle_number:
+            if (new_game.max_index + 1) - i == new_game.board[new_game.current_player][i] % cycle_number:
                 utility += 1.5
                 break
 
